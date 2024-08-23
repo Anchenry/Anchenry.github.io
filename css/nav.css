@@ -1,0 +1,75 @@
+/* 导航栏美化 */
+nav {
+    height: 4em;
+    align-items: center;
+    padding-top: 0.5em;
+}
+
+nav .nav-div{
+    height: 100%;
+    align-items: center;
+    display: flex;
+}
+
+nav .page-title{
+    /* 整体样式 */
+    float: left;
+    width: 10%;
+    height: 100%;                  
+    margin: 0em 2em 0em 0.1em;
+    display: flex;
+    align-items: center; 
+    text-align: center;
+    justify-content: space-around;
+    flex: 1;
+}
+nav .page-title a{
+    font-size: 2em;
+    display: block;
+}
+nav #PageTitleSvg{
+    width: 6em;
+    border-radius: 40px;
+    display: none;
+}
+
+nav #mediumText {
+    flex: 3;
+    height: 100%;                  
+    margin: 0em 0.5em 0em 0.5em;
+    display: flex;
+    align-items: center; 
+    text-align: center;
+    justify-content: space-around;
+    font-size: 1em;
+}
+
+nav .menu {
+    float: right;
+    align-items: center;
+    justify-content: flex-end;
+    width: 80%;
+    height: 100%;
+    flex: 1;
+}
+
+nav .menu #DayToNightDiv{
+    float: rigth;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    float: right;
+}
+.navsvg {
+    display: flex;
+    float: right;
+    height: 1.5em;
+    padding: 0.5em;
+    margin: 0.5em;
+    border-radius: 50%; 
+}
+#DayToNightSVG {
+    margin-right: 1em;
+}

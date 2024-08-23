@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html data-theme="atom-one-light">
+<head>
+    <title>Anchen - 心情美好，万物晴朗</title>
+    <link rel="icon" href="/./img/logo_1.jpg">
+    <meta charset="utf-8">
+
+    <!-- 引入配置文件 -->
+    
+<link rel="stylesheet" href="/css/main.css">
+
+    
+<link rel="stylesheet" href="/lib/highlight/styles/arduino-light.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <div id="main">
+        <!-- 引入导航 -->
+        <nav>
+            
+<link rel="stylesheet" href="/css/nav.css">
+
+
+<script src="/js/nav.js"></script>
+
+
+<div class="nav-div">
+    <div class="page-title" onmouseover="showTitileImage()" onmouseout="showTitileLink()" onclick="window.location.href='/'">
+        <!-- 左侧页面标题和Home键 -->
+        <a id="PageTitle">Anchen</a>
+        <img class="navsvg" id="PageTitleSvg" src="/img/Home.svg" alt="SVG Image">
+    </div>
+    <div id="mediumText">
+        
+    </div>
+    <div class="menu">
+        <div id="DayToNightDiv" onclick="toggleDayToNight()">
+            <img class="navsvg" id="DayToNightSVG" src="/img/Day.svg" alt="SVG Image">
+        </div>
+    </div>
+</div>
+
+
+        </nav>
+        <div class="main-container">
+            <!-- 引入正文 -->
+            <div id="content">
+                
+<link rel="stylesheet" href="/css/post.css">
+
+<div id="post-top">
+    <span id="post-title" >【QT+SQLite】实现大学生课程学习管理与成绩评价系统整体设计</span>
+    <div id="post-data">
+        <span id="post-author">作者: Anchenry</span>
+        <br>
+        <span id="post-date">2023-10-13 11:45:14</span>
+    </div>
+</div>
+<div id="article">
+    <h2 id="0-写在最前面"><a href="#0-写在最前面" class="headerlink" title="0. 写在最前面"></a>0. 写在最前面</h2><p>本次设计的程序是数据库与空间数据课程的课程设计成果，基于QT 5.9.0 MinGW 32bit使用Qt Creator4.3.0，数据库使用了Navicat 12 for SQLite 。那么两个软件的具体安装方法此处不再赘述，下面的程序设计介绍过程中也默认各位看官已经安装好了编译器和数据库，安装的方法看官们可以参考其他博主的文章进行安装。看官们也可以参照B站的讲解视频进行开发，[<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1pP4y1E7XM/?spm_id_from=333.999.0.0&vd_source=b9657dcf6a633f6c2d6ecf3a0f99acb9%5D%EF%BC%8CUP%E4%B8%BB%E8%AE%B2%E8%A7%A3%E7%9A%84%E6%AF%94%E8%BE%83%E4%BB%94%E7%BB%86%EF%BC%8C%E5%9C%A8%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E7%9A%84%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%B9%9F%E6%9C%89%E5%BE%88%E5%A4%9A%E9%83%A8%E5%88%86%E5%8F%82%E8%80%83%E4%BA%86%E8%A7%86%E9%A2%91%E4%B8%AD%E7%9A%84%E5%81%9A%E6%B3%95%E3%80%82">https://www.bilibili.com/video/BV1pP4y1E7XM/?spm_id_from=333.999.0.0&amp;vd_source=b9657dcf6a633f6c2d6ecf3a0f99acb9]，UP主讲解的比较仔细，在程序设计的过程中也有很多部分参考了视频中的做法。</a><br>程序的完整程序链接在文章置顶，大家有需要可以付费下载。另外，这是本系列的第一篇文章，仅从整体设计的角度让看官们知晓需要系统需要实现的内容及大概的实现路径，后续内容会陆续更新。</p>
+<h2 id="1-需求分析"><a href="#1-需求分析" class="headerlink" title="1. 需求分析"></a>1. 需求分析</h2><p>大学生课程学习管理与成绩评价系统主要用于给教师提供查询系、班级、学生基础信息、教师基础信息、学生选课信息、学生绩点信息，对信息进行维护以及通过教学楼平面图选择教室等功能；为学生提供选课以及校园导航等功能。</p>
+<h2 id="（1）功能需求："><a href="#（1）功能需求：" class="headerlink" title="（1）功能需求："></a>（1）功能需求：</h2><p>创建大学生课程学习管理与成绩评价系统，选择教师端登录可以实现对教师、学生、系、课程等基础信息的维护和查询，以及对学生课程成绩、学分情况、教师授课情况和学生选课情况的查询；选择学生端登入可以进行学生选课，查询已经选择的课程和未被选择的课程。同时需要对学生成绩进行成绩评价，设计学生的绩点数据模型，每门课程分数对应有不同的绩点，通过计算规则，系统能够自动对参加学习的所有学生进行绩点统计和排名，能够按照班级对学生的平均绩点情况进行统计输出和分析。在教师录入课程信息时，可通过交互平面图选择课程教室。并且可以通过选定课程，自动跳转所在教室位置。在学生选课时，基于建立的学校空间数据，完成学校各教学设施的地图查询，同时提供路径指引，给出从宿舍到教室的最短路径。 </p>
+<h2 id="（2）信息需求"><a href="#（2）信息需求" class="headerlink" title="（2）信息需求"></a>（2）信息需求</h2><p>教师属性有工作证号、姓名、职称、电话，学生属性有学号、姓名、性别、出生年月，系属性有系代号、系名和系办公室电话，课程属性有课序号、课名、课程类型、学分、上课时间及名额，课程类型分为基础必修、专业必修和选修三个类型，教室属性有教室号码、层数、容纳人数、教室的空间位置等信息。同时每个学生都属于一个班，每个班都属于一个系，每个教师也都属于一个系。一名教师可以教多门课，一门课可以有几位主讲老师，一名同学可以选多门课，一门课可被若干同学选中，每门课的学生人数有上限。一名同学选中的课若已学完，应该录入相应的成绩。本单位学生、教师可能存在重名，工作证号、学号作为标识。</p>
+<h2 id="（3）环境要求"><a href="#（3）环境要求" class="headerlink" title="（3）环境要求"></a>（3）环境要求</h2><p>大学生课程学习管理与成绩评价系统采用C&#x2F;S架构，即客户端&#x2F;服务器体系结构，服务器负责数据的存储与管理，客户端负责完成与用户的交互任务，通过可视化图形界面，展示学生管理系统，并通过可视化图形界面中的按键、输入框等组件实现数据的展现、增加、删除、修改等功能，服务器与客户端都位于个人电脑。</p>
+<h2 id="2-概念设计"><a href="#2-概念设计" class="headerlink" title="2. 概念设计"></a>2. 概念设计</h2><h2 id="（1）概念模型（E-R-图）"><a href="#（1）概念模型（E-R-图）" class="headerlink" title="（1）概念模型（E-R 图）"></a>（1）概念模型（E-R 图）</h2><p>大学生课程学习管理与成绩评价系统的实体集有“系”、“班级”、“学生”、“教师”、“课程”、“教室”、“课程类型”。每个班都属于一个系，每个教师也都属于一个系,所以系对班级、教师为一对多的关系；每个学生都属于一个班，班级对学生为一对多的关系；一名教师可以教多门课，一门课可以有几位主讲老师，教师与课程为多对多的关系；一名同学可以选多门课，一门课可被若干同学选中，学生与课程为多对多的关系；课程与教室进行交互式连接，为一对一的关系；课程只能有一种课程类型，课程与课程类型为一对一的关系。<br>对每个实体定义的属性如下，实体的码用下划线划出：</p>
+<pre><code class="highlight cpp">系：&#123;系代号，系名，系办公室电话&#125;
+班级：&#123;班号&#125;
+学生：&#123;学号，姓名，性别，出生年月，登入密码&#125;
+教师：&#123;工作证号，姓名，职称，电话，登入密码&#125;
+课程：&#123;课名，课程号，上课时间，课程类型，学分，名额&#125;
+教室：&#123;教室号，层数，容纳人数，教室空间位置&#125;
+课程性质：&#123;基础必修，专业必修，选修&#125;</code></pre>
+
+<h2 id="（2）数据字典："><a href="#（2）数据字典：" class="headerlink" title="（2）数据字典："></a>（2）数据字典：</h2><p>数据字典中的数据项主要是字符串型和整型。<br>数据项：</p>
+<pre><code class="highlight cpp">系代号&#123;de_num,CHAR,<span class="number">60</span>&#125;，系名&#123;de_name,TEXT&#125;，系办公室电话&#123;de_tel,CHAR,<span class="number">60</span>&#125;
+班级&#123;cl_num,CHAR,<span class="number">60</span>&#125;
+学号&#123;stu_num,CHAR,<span class="number">60</span>&#125;，姓名&#123;stu_name,TEXT&#125;，性别&#123;stu_gender,TEXT&#125;，出生年份&#123;birth_year,INT&#125;，出生月份&#123;birth_month,INT&#125;
+工作证号&#123;te_num,CHAR,<span class="number">60</span>&#125;，姓名&#123;te_name,TEXT&#125;，职称&#123;te_tel,TEXT&#125;，电话&#123;te_tel,TEXT&#125;
+课名&#123;le_num,CHAR,<span class="number">60</span>&#125;，课程号&#123;le_name,TEXT&#125;，课程类型&#123;le_type,CHAR,<span class="number">32</span>&#125;，学分&#123;le_credit,real&#125;，上课时间&#123;le_time,TEXT&#125;，名额&#123;le_people,BIGINT&#125;
+教室号码&#123;cr_num,CHAR,<span class="number">60</span>&#125;，层数&#123;cr_floor,INT&#125;，容纳人数&#123;cr_commit,INT&#125;</code></pre>
+
+<p>大学生课程学习管理与成绩评价系统采用了关系模型作为数据库的逻辑模型，在设计完成校园导航功能时利用了空间数据来构建了无向图实现最短路径的查询。同时对每个关系均设置了主键和外键约束。<br>本系统的数据流图的第一层分解图如图3，课程性质和教室授课情况等数据不需要进行更改，所以在设计系统之前通过SQL语句预先存放在了数据库中，其余的大部分数据都可由教师（管理员）或学生进行维护，实现增加、删除、修改数据。<br>本系统可以实现的数据处理有：学生选课、校园导航、系班级信息查询维护、学生基础信息查询和维护、学生选课情况查询及成绩录入、学生学业情况查询、教师基本信息查询和维护、教师授课信息查询、课程信息查询和维护。<br>需要存储的数据有：校园空间信息、学生选课及成绩信息、教师基本信息、教师授课信息、课程信息、系班级信息、学生基础信息等。<br>本系统的外部项及数据的提供者和使用者为学生和教师（管理员）。<br>其中较复杂的是处理是P1.9课程信息查询和维护，需要通过教学楼的平面图实现在录入课程信息时通过交互平面图选择课程教室，并且还可以通过选定课程自动跳转所在教室的位置，以及完成课程信息的增加、删除、修改等维护。DFD分解图如下：</p>
+<h2 id="3-逻辑结构设计"><a href="#3-逻辑结构设计" class="headerlink" title="3. 逻辑结构设计"></a>3. 逻辑结构设计</h2><p>“系”实体集和“班级”实体集用“属于”联系关联，联系的基数是1：n,根据转换规则与n端对应的关系模式合并，得到2个关系模式：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：系（系代号，系名，系办公室电话）
+关系<span class="number">2</span>：班级（班号，系代号） 系代号设置为外键</code></pre>
+
+<p>“系”实体集和“教师”实体集为1对多的关系，系关系已经建立所以转化的到1个关系模式：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：教师（工作证号，姓名，职称，电话，系代号，登入密码） 系代号设置为外键</code></pre>
+
+<p>“班级”实体集和“学生”实体集也由“属于”联系关联，联系的基数是1：n，班级关系已经建立所以转化的到1个关系模式：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：学生（学号，姓名，性别，出生年月，班号，登入密码） 班号设置为外键</code></pre>
+
+<p>“课程”实体集和“教室”实体集为一对多（1：n）关系，可以再建立2个关系模型：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：教室（教室号，层数，容纳人数，教室空间位置）
+关系<span class="number">2</span>：课程（课程号，课名，上课时间，课程性质，学分，名额，教室号）</code></pre>
+
+<p>关系2课程中教室号、课程性质设置为外键<br>“学生”实体集和“课程”实体集由“选择”联系关联，为多对多（n:m）关系，可以再建立1个关系模型：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：学生-课程（学号，课程号，成绩，重修标记）</code></pre>
+
+<p>“教师”实体集和“课程”实体集为多对多关系，转化为1个关系模式：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：教师-课程（工作证号，课程号）</code></pre>
+
+<p>“课程”和“课程性质”为一对多关系，可以再建立1个关系模式：</p>
+<pre><code class="highlight cpp">关系<span class="number">1</span>：课程性质（课程性质）</code></pre>
+
+<p>因为课程性质不需要进行数据维护，直接添加数据“基础必修”、“专业必修”、“选修”。</p>
+<h2 id="4-物理设计"><a href="#4-物理设计" class="headerlink" title="4. 物理设计"></a>4. 物理设计</h2><p>数据库存储在通过Navicat 12 for SQLite创建的数据库中，空间数据也可以通过PostGIS将在ARCGIS中处理好导出的shp文件储存在pgADmin软件的postgreSQL数据库中（这部分在系统中并没有实现，看官们可以自行尝试，GeoSever等网站也可以尝试）。</p>
+
+</div>
+
+
+            </div>
+
+            <!-- 引入侧边栏 -->
+            <aside id="#aside">
+                
+<link rel="stylesheet" href="/css/aside.css">
+
+
+<link rel="stylesheet" href="/lib/leaflet/leaflet.css">
+
+<div class="selfdiv">
+    <div class="csseffect">
+        <div id="pageicon">
+            <img src="/./img/logo_1.jpg" alt="img">
+        </div>
+        <div id="moon"></div>
+    </div>
+</div>
+<div id="locationMap"></div>
+
+
+<script src="/lib/leaflet/leaflet.js"></script>
+
+
+<script src="/js/aside.js"></script>
+
+            </aside>
+        </div>   
+        <div class="bottom">
+            
+<link rel="stylesheet" href="/css/bottom.css">
+
+<hr class="hr-twill">
+<div class="foot">
+    <div class="since">
+        <p class="sinceyear">©  2023-2024</p>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <!-- 引入 js 文件 -->
+    
+<script src="/js/main.js"></script>
+
+    
+<script src="/lib/highlight/highlight.min.js"></script>
+
+    
+<script src="/lib/jquery-3.7.1.min.js"></script>
+
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html data-theme="atom-one-light">
+<head>
+    <title>Anchen - 心情美好，万物晴朗</title>
+    <link rel="icon" href="/./img/logo_1.jpg">
+    <meta charset="utf-8">
+
+    <!-- 引入配置文件 -->
+    
+<link rel="stylesheet" href="/css/main.css">
+
+    
+<link rel="stylesheet" href="/lib/highlight/styles/arduino-light.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <div id="main">
+        <!-- 引入导航 -->
+        <nav>
+            
+<link rel="stylesheet" href="/css/nav.css">
+
+
+<script src="/js/nav.js"></script>
+
+
+<div class="nav-div">
+    <div class="page-title" onmouseover="showTitileImage()" onmouseout="showTitileLink()" onclick="window.location.href='/'">
+        <!-- 左侧页面标题和Home键 -->
+        <a id="PageTitle">Anchen</a>
+        <img class="navsvg" id="PageTitleSvg" src="/img/Home.svg" alt="SVG Image">
+    </div>
+    <div id="mediumText">
+        
+    </div>
+    <div class="menu">
+        <div id="DayToNightDiv" onclick="toggleDayToNight()">
+            <img class="navsvg" id="DayToNightSVG" src="/img/Day.svg" alt="SVG Image">
+        </div>
+    </div>
+</div>
+
+
+        </nav>
+        <div class="main-container">
+            <!-- 引入正文 -->
+            <div id="content">
+                
+<link rel="stylesheet" href="/css/post.css">
+
+<div id="post-top">
+    <span id="post-title" >【QT+SQLite】实现大学生课程学习管理与成绩评价系统（2）——数据库实现</span>
+    <div id="post-data">
+        <span id="post-author">作者: Anchenry</span>
+        <br>
+        <span id="post-date">2023-11-13 11:45:14</span>
+    </div>
+</div>
+<div id="article">
+    <p>&emsp;&emsp;这是GIS系统可视化的第二篇文章，还没有看过第一篇<strong>系统整体设计</strong>的小伙伴可以在专栏里去寻找查阅，那么本篇文章将着重讲述数据库的设计和实现也就是SQLite的部分。</p>
+<p>&emsp;&emsp;那么在最开始请允许我先介绍一下在此处用到的软件——Navicate for SQLite，先奉上官网[<a target="_blank" rel="noopener" href="https://www.navicat.com.cn/products/navicat-for-sqlite]%EF%BC%8C%E8%BD%AF%E4%BB%B6%E6%98%AF%E9%9C%80%E8%A6%81%E6%94%B6%E8%B4%B9%E7%9A%84%E9%82%A3%E4%B9%88%E5%B0%B1%E5%90%84%E6%98%BE%E7%A5%9E%E9%80%9A%E4%BA%86%E3%80%82Navicate">https://www.navicat.com.cn/products/navicat-for-sqlite]，软件是需要收费的那么就各显神通了。Navicate</a> for SQLite与一般的大型数据库比如SQL Sever相比最大的优点就是轻量级并且操作简便，相信你也会在接下来的学习和实操过程体会到这一区别。因为实习的特殊要求，我此处依旧使用了SQL语句来创建表、装入数据进行测试，下文中也会介绍更为简便的方式进行操作。</p>
+<h2 id="1-编写模式"><a href="#1-编写模式" class="headerlink" title="1. 编写模式"></a>1. 编写模式</h2><p>&emsp;&emsp;那么接下来我们将按照功能设计时设计的表及字段进行数据库的闯创建，再次附上设E-R图。<br>&emsp;&emsp;第一步我们打开安装好的Navicate for SQLite软件，打开的界面如下，相比于SQL Sever非常的简洁，Navicate同款的for MySQL等兄弟也同样的简洁话少。<br>&emsp;&emsp;第二部打开左上角的连接，界面如下。我们需要新建一个连接，选择新建SQLite 3或者SQLite 2，再点击数据库文件这一行输入文件名并选择存储的位置。<br>&emsp;&emsp;那么这里我就直接打开我创建好的数据库进行演示啦，所有按需求建立的表如下图所示。<br>&emsp;&emsp;大家新建的数据库是没有任何表格的，别急我们用SQL语言来创建，点击数据库名称右键命令列界面输入SQL语句进行创建。SQL语句的语言规范大家可以自行Chat，此处不再赘述，我实习用到的SQL语句会随文附在文中。<br>&emsp;&emsp;简单来说，下面这段代码创建了一个名为STUDENT的表，并将学号也就是stu_num设置为逐渐，并设置班号也就是cl_num非空为必填空，并且为外键。这是我的设计，&#x3D;&#x3D;<strong>你或许会觉得我这样设计是不对的，那么没关系你可以按照自己的想法来设计这些表，要相信自己的想法肯定是对的</strong>&#x3D;&#x3D;。</p>
+<pre><code class="highlight sql"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> STUDENT
+(
+&quot;stu_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">PRIMARY</span> KEY, <span class="comment">--学号</span>
+&quot;stu_name&quot; TEXT, <span class="comment">--姓名</span>
+&quot;stu_gender&quot; TEXT, <span class="comment">--性别</span>
+&quot;birth_year&quot; <span class="type">INT</span>, <span class="comment">--出生年份</span>
+&quot;birth_month&quot; <span class="type">INT</span>, <span class="comment">--出生月份</span>
+&quot;cl_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--班号</span>
+<span class="keyword">FOREIGN</span> KEY(&quot;cl_num&quot;) <span class="keyword">REFERENCES</span> CLASS(&quot;cl_num&quot;)
+);</code></pre>
+<p>&emsp;&emsp;其他的表不一一解释了，相信大家能够看得懂其中的含义，还是重申大家要自己设计这些表，此处的代码仅代码我自己的想法。</p>
+<pre><code class="highlight sql"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TEACHER
+(
+&quot;te_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">PRIMARY</span> KEY, <span class="comment">--工作证号</span>
+&quot;te_name&quot; TEXT, <span class="comment">--姓名</span>
+&quot;te_title&quot; TEXT, <span class="comment">--职称</span>
+&quot;te_tel&quot; TEXT, <span class="comment">--电话</span>
+&quot;de_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,  <span class="comment">--所属系代号</span>
+<span class="keyword">FOREIGN</span> KEY(&quot;de_num&quot;) <span class="keyword">REFERENCES</span> DEPARTMENT(&quot;de_num&quot;)
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> DEPARTMENT
+(
+&quot;de_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">PRIMARY</span> KEY, <span class="comment">--系代号</span>
+&quot;de_name&quot; TEXT, <span class="comment">--系名</span>
+&quot;de_tel&quot;<span class="type">CHAR</span>(<span class="number">60</span>),  <span class="comment">--系办公室电话</span>
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> LESSON
+(
+&quot;le_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">PRIMARY</span> KEY, <span class="comment">--课程号</span>
+&quot;le_name&quot; TEXT, <span class="comment">--课名</span>
+&quot;le_type&quot; <span class="type">CHAR</span>(<span class="number">32</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--课程类型</span>
+&quot;le_credit&quot; <span class="type">REAL</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--学分</span>
+&quot;le_time&quot; TEXT, <span class="comment">--上课时间</span>
+&quot;le_people&quot; <span class="type">BIGINT</span>, <span class="comment">--名额</span>
+&quot;cr_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--教室号码</span>
+<span class="keyword">FOREIGN</span> KEY(&quot;le_type&quot;) <span class="keyword">REFERENCES</span> Course_type(&quot;le_type&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;cr_num&quot;) <span class="keyword">REFERENCES</span> CLASSROOM(&quot;cr_num&quot;)
+);
+<span class="comment">--以通过选定课程，自动跳转所在教室位置，通过课程表查询教室空间位置</span>
+<span class="comment">--录入课程信息时，通过交互平面图选择课程教室</span>
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> CLASSROOM
+(
+&quot;cr_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">PRIMARY</span> KEY, <span class="comment">--教室号码</span>
+&quot;cr_floor&quot; <span class="type">INT</span>, <span class="comment">--层数</span>
+&quot;cr_commit&quot; <span class="type">INT</span>, <span class="comment">--容纳人数</span>
+&quot;cr_location&quot;  TEXT  <span class="comment">--教室空间位置，描述空间位置</span>
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> CLASS
+(
+&quot;cl_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">PRIMARY</span> KEY,
+&quot;de_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+<span class="keyword">FOREIGN</span> KEY(&quot;de_num&quot;) <span class="keyword">REFERENCES</span> DEPARTMENT(&quot;de_num&quot;)
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> StuL
+(
+&quot;stu_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) , <span class="comment">--学号</span>
+&quot;le_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,<span class="comment">--课程号</span>
+&quot;course&quot; <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--成绩</span>
+&quot;make_up&quot; <span class="type">CHAR</span>(<span class="number">12</span>), <span class="comment">--是否补考</span>
+<span class="keyword">PRIMARY</span> KEY (&quot;stu_num&quot;,&quot;le_num&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;stu_num&quot;) <span class="keyword">REFERENCES</span> STUDENT(&quot;stu_num&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;le_num&quot;) <span class="keyword">REFERENCES</span> LESSON(&quot;le_num&quot;)
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> TC
+(
+&quot;te_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) , <span class="comment">--工作证号</span>
+&quot;le_num&quot;<span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,  <span class="comment">--课程号</span>
+<span class="keyword">PRIMARY</span> KEY (&quot;te_num&quot;,&quot;le_num&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;te_num&quot;) <span class="keyword">REFERENCES</span> TEACHER(&quot;te_num&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;le_num&quot;) <span class="keyword">REFERENCES</span> LESSON(&quot;le_num&quot;)
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Course_type
+(
+&quot;le_type&quot; <span class="type">CHAR</span>(<span class="number">32</span>) <span class="keyword">PRIMARY</span> KEY
+);
+
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> Meancourse
+(
+&quot;stu_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) , <span class="comment">--学号</span>
+&quot;stu_name&quot; TEXT, <span class="comment">--学生姓名</span>
+&quot;cl_num&quot; <span class="type">CHAR</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--班号</span>
+&quot;meancourse&quot; <span class="type">REAL</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="comment">--平均学分绩点</span>
+<span class="keyword">PRIMARY</span> KEY (&quot;stu_num&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;stu_num&quot;) <span class="keyword">REFERENCES</span> STUDENT(&quot;stu_num&quot;),
+<span class="keyword">FOREIGN</span> KEY(&quot;cl_num&quot;) <span class="keyword">REFERENCES</span> CLASS(&quot;cl_num&quot;)
+)</code></pre>
+<p>&emsp;&emsp;那么接下来由繁入简，介绍更简单直观的操作方法，直接点击鼠标就能够实现操作。<br>&emsp;&emsp;如下图，右键表新建表你就会跳转到设计表的界面，然后…<br>&emsp;&emsp;然后你就能看到你所有想要的操作了。嗯对，就是这么简单，这就是Navicate相比传统的数据库软件最大的好处。字段的增减和属性设置全在这啦。</p>
+<h2 id="2-数据载入"><a href="#2-数据载入" class="headerlink" title="2. 数据载入"></a>2. 数据载入</h2><p>&emsp;&emsp;那么接下来我们往Navicate中装入数据，同样由繁入简（毕竟课设最大的目的是SQL语句，啊吧啊吧~），先介绍SQL语句装入方式，同样是在命令列界面中，输入SQL语句来执行，代码附上。</p>
+<pre><code class="highlight sql"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> Course_type
+<span class="keyword">VALUES</span>
+(<span class="string">&#x27;基础必修&#x27;</span>),
+( <span class="string">&#x27;专业必修&#x27;</span>),
+( <span class="string">&#x27;专业选修&#x27;</span>);
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> DEPARTMENT(&quot;de_num&quot;,&quot;de_name&quot;)
+<span class="keyword">VALUES</span>
+(<span class="string">&#x27;D11&#x27;</span>,<span class="string">&#x27;地理系&#x27;</span>),
+(<span class="string">&#x27;D12&#x27;</span>,<span class="string">&#x27;空间信息系&#x27;</span>);
+
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> CLASS(&quot;cl_num&quot;,&quot;de_num&quot;)
+<span class="keyword">VALUES</span>
+( <span class="string">&#x27;114211&#x27;</span>,<span class="string">&#x27;D12&#x27;</span>),
+( <span class="string">&#x27;114212&#x27;</span>,<span class="string">&#x27;D12&#x27;</span>),
+( <span class="string">&#x27;114213&#x27;</span>,<span class="string">&#x27;D12&#x27;</span>),
+( <span class="string">&#x27;114214&#x27;</span>,<span class="string">&#x27;D12&#x27;</span>),
+( <span class="string">&#x27;118211&#x27;</span>,<span class="string">&#x27;D11&#x27;</span>),
+( <span class="string">&#x27;118212&#x27;</span>,<span class="string">&#x27;D11&#x27;</span>);
+</code></pre>
+
+<p>&emsp;&emsp;那么成功创建并增加了数据后数据库中各关系的情况如下，分别为系、班级、学生、教师、课程、教室、课程性质、学生-课程、教师-课程的关系模式。<br>&emsp;&emsp;那么简单方法也是在设计表的界面直接点的行列进行输入。<br>&emsp;&emsp;好了到这里数据库的表和内容就已经全部实现了，还有一些其他的功能，比如说查询、索引、触发器，也是可以直接通过Navicate来实现的，还有就是自动运行，可以设置数据备份，防止数据不小心删除了。</p>
+
+</div>
+
+
+            </div>
+
+            <!-- 引入侧边栏 -->
+            <aside id="#aside">
+                
+<link rel="stylesheet" href="/css/aside.css">
+
+
+<link rel="stylesheet" href="/lib/leaflet/leaflet.css">
+
+<div class="selfdiv">
+    <div class="csseffect">
+        <div id="pageicon">
+            <img src="/./img/logo_1.jpg" alt="img">
+        </div>
+        <div id="moon"></div>
+    </div>
+</div>
+<div id="locationMap"></div>
+
+
+<script src="/lib/leaflet/leaflet.js"></script>
+
+
+<script src="/js/aside.js"></script>
+
+            </aside>
+        </div>   
+        <div class="bottom">
+            
+<link rel="stylesheet" href="/css/bottom.css">
+
+<hr class="hr-twill">
+<div class="foot">
+    <div class="since">
+        <p class="sinceyear">©  2023-2024</p>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <!-- 引入 js 文件 -->
+    
+<script src="/js/main.js"></script>
+
+    
+<script src="/lib/highlight/highlight.min.js"></script>
+
+    
+<script src="/lib/jquery-3.7.1.min.js"></script>
+
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
+</body>
+</html>

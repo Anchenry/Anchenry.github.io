@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html data-theme="atom-one-light">
+<head>
+    <title>Anchen - 心情美好，万物晴朗</title>
+    <link rel="icon" href="/./img/logo_1.jpg">
+    <meta charset="utf-8">
+
+    <!-- 引入配置文件 -->
+    
+<link rel="stylesheet" href="/css/main.css">
+
+    
+<link rel="stylesheet" href="/lib/highlight/styles/arduino-light.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <div id="main">
+        <!-- 引入导航 -->
+        <nav>
+            
+<link rel="stylesheet" href="/css/nav.css">
+
+
+<script src="/js/nav.js"></script>
+
+
+<div class="nav-div">
+    <div class="page-title" onmouseover="showTitileImage()" onmouseout="showTitileLink()" onclick="window.location.href='/'">
+        <!-- 左侧页面标题和Home键 -->
+        <a id="PageTitle">Anchen</a>
+        <img class="navsvg" id="PageTitleSvg" src="/img/Home.svg" alt="SVG Image">
+    </div>
+    <div id="mediumText">
+        
+    </div>
+    <div class="menu">
+        <div id="DayToNightDiv" onclick="toggleDayToNight()">
+            <img class="navsvg" id="DayToNightSVG" src="/img/Day.svg" alt="SVG Image">
+        </div>
+    </div>
+</div>
+
+
+        </nav>
+        <div class="main-container">
+            <!-- 引入正文 -->
+            <div id="content">
+                
+<link rel="stylesheet" href="/css/post.css">
+
+<div id="post-top">
+    <span id="post-title" >【Arcpy】栅格数据的批量镶嵌和上传切片</span>
+    <div id="post-data">
+        <span id="post-author">作者: Anchenry</span>
+        <br>
+        <span id="post-date">2024-03-14 15:05:46</span>
+    </div>
+</div>
+<div id="article">
+    <p>&emsp;&emsp;这是Arcpy系列的第一篇文章，首先要先介绍一下Arcpy的来源与功能。</p>
+<h2 id="0-缘起"><a href="#0-缘起" class="headerlink" title="0. 缘起"></a>0. 缘起</h2><p>&emsp;&emsp;Arcpy是ArcGIS或者ArcGIS Pro中的一个Python模块，它提供了对ArcGIS功能的Python编程访问，允许用户通过Python脚本自动执行GIS分析、数据处理、地图制作等任务。arcpy模块使得用户能够在ArcGIS环境中编写脚本，利用强大的地理处理功能进行空间数据管理和分析。它提供了各种工具和函数，可用于读取、编辑、转换和分析地理空间数据，包括矢量数据（如点、线、面）和栅格数据（如影像、DEM）等。<br>&emsp;&emsp;在ArcGIS中使用的是较为古早的Python2.7版本，ArcGIS Pro中使用的是较新的Python3.9版本，同时在今天要使用到的ArcGIS Server中也提供了Arcpy的功能调用。<br>&emsp;&emsp;Arcpy的使用方法比较多，可以直接在ArcGIS软件中进行使用，或者使用掉包的方式在Vs Code或者PyCharm等编译器中进行使用，鄙人更推荐后者，方便在代码编写过程中进行调试和纠错，更直观方便一些。</p>
+<h2 id="1-实现"><a href="#1-实现" class="headerlink" title="1. 实现"></a>1. 实现</h2><p>&emsp;&emsp;本文要实现的功能是将一个文件夹中的栅格数据进行批量镶嵌再上传至ArcGIS Server中并进行切片。<br>&emsp;&emsp;那么接下来讨论一下实现思路，分为<strong>镶嵌</strong>和<strong>上传切片</strong>两部分。<br>&emsp;&emsp;镶嵌前需要先进行栅格数据的投影，分别使用到了ProjectRaster_management和MosaicToNewRaster_management两个函数进行使用。<br>&emsp;&emsp;上传切片部分使用了ArcGIS Server 10.2 的版本（这个版本与ArcGIS 10.8并不兼容，所以不能同时存在在一台电脑中），需要先通过CreateGISServerConnectionFile函数与Server 创建连接生成一个ags文件，再使用CreateImageSDDraft、AnalyzeForSD、UploadServiceDefinition_server三个函数分别直行创建服务定义草稿文件、错误分析和发布的任务；发布成功后再进行切片，CreateMapServerCache_server和ManageMapServerCacheTiles_server实现了这个功能。<br>&emsp;&emsp;Arcpy中的功能和在ArcGIS中操作是相似的，你可以理解为ArcGIS软件中的面板是对函数的调用而每填入的输入框就是函数的参数，这样能有助于ArcPy代码的编写，同时这是基于此Arcpy的好处就是批量的直行这点类似于模型构建器，也就是直行循环，在需要重复进行计算时比较方便。</p>
+<h2 id="2-部分代码"><a href="#2-部分代码" class="headerlink" title="2. 部分代码"></a>2. 部分代码</h2><p>&emsp;&emsp;栅格数据合并的代码如下：</p>
+<pre><code class="highlight python"><span class="comment"># 栅格数据合并</span>
+mosaic_dataset_name = <span class="string">&quot;MergedRaster.tif&quot;</span>  <span class="comment"># 不能超过13个字符</span>
+mosaic_dataset_path = arcpy.os.path.join(output_filepath, mosaic_dataset_name)
+<span class="comment"># 传入参数分别为待合并的栅格数据集、合并后栅格数据集的输出工作空间、合并后的栅格数据集的名称、输出栅格数据集的坐标系统、输出栅格数据集的像素类型、输出栅格数据集的像素大小、输出栅格数据集的波段数、合并栅格数据集的方法、合并颜色表的模式</span>
+arcpy.MosaicToNewRaster_management(raster_list, output_filepath, mosaic_dataset_name, out_coordinate_system,
+                                   <span class="string">&#x27;16_BIT_SIGNED&#x27;</span>, <span class="string">&#x27;250&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;LAST&#x27;</span>, <span class="string">&#x27;FIRST&#x27;</span>)
+<span class="built_in">print</span>(<span class="string">&quot;Raster datasets merged successfully.&quot;</span>)
+</code></pre>
+<p>&emsp;&emsp;上传至ArcGIS Server的代码如下：</p>
+<pre><code class="highlight python">sddraftname = <span class="string">&#x27;servercon.sddraft&#x27;</span>
+sddraft_path = arcpy.os.path.join(env.workspace, sddraftname)
+servicename = <span class="string">&#x27;tif&#x27;</span>
+sdname = <span class="string">&#x27;servercon.sd&#x27;</span>
+sdname_path = arcpy.os.path.join(env.workspace, sdname)
+foldername = <span class="string">&#x27;tif&#x27;</span>
+sddraft = arcpy.CreateImageSDDraft(mosaic_dataset_path, sddraft_path, servicename, <span class="string">&#x27;ARCGIS_SERVER&#x27;</span>, ags_path, <span class="literal">False</span>, foldername)
+<span class="comment"># sddraft = arcpy.mapping.CreateMapSDDraft(mxd_path, sddraft_path, servicename, &#x27;ARCGIS_SERVER&#x27;, servercon, False, foldername)  # 创建服务定义草稿文件</span>
+analysis = arcpy.mapping.AnalyzeForSD(sddraft_path)
+<span class="comment"># 查看分析结果中的错误消息</span>
+<span class="keyword">for</span> key, value <span class="keyword">in</span> analysis[<span class="string">&#x27;messages&#x27;</span>].iteritems():
+    <span class="built_in">print</span>(key)
+    <span class="keyword">for</span> subvalue <span class="keyword">in</span> value:
+        <span class="built_in">print</span>(subvalue[<span class="string">&#x27;description&#x27;</span>])
+
+arcpy.StageService_server(sddraft_path, sdname_path)  <span class="comment"># 将服务定义草稿(.sddraft) 转换为服务定义(.sd)文件</span>
+<span class="keyword">try</span>:
+    arcpy.UploadServiceDefinition_server(sdname_path, ags_path)  <span class="comment"># 发布服务</span>
+<span class="keyword">except</span> Exception, e:
+    <span class="built_in">print</span> e.message</code></pre>
+
+</div>
+
+
+            </div>
+
+            <!-- 引入侧边栏 -->
+            <aside id="#aside">
+                
+<link rel="stylesheet" href="/css/aside.css">
+
+
+<link rel="stylesheet" href="/lib/leaflet/leaflet.css">
+
+<div class="selfdiv">
+    <div class="csseffect">
+        <div id="pageicon">
+            <img src="/./img/logo_1.jpg" alt="img">
+        </div>
+        <div id="moon"></div>
+    </div>
+</div>
+<div id="locationMap"></div>
+
+
+<script src="/lib/leaflet/leaflet.js"></script>
+
+
+<script src="/js/aside.js"></script>
+
+            </aside>
+        </div>   
+        <div class="bottom">
+            
+<link rel="stylesheet" href="/css/bottom.css">
+
+<hr class="hr-twill">
+<div class="foot">
+    <div class="since">
+        <p class="sinceyear">©  2023-2024</p>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <!-- 引入 js 文件 -->
+    
+<script src="/js/main.js"></script>
+
+    
+<script src="/lib/highlight/highlight.min.js"></script>
+
+    
+<script src="/lib/jquery-3.7.1.min.js"></script>
+
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
+</body>
+</html>

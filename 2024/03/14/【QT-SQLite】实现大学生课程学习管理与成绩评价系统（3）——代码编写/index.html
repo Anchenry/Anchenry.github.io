@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html data-theme="atom-one-light">
+<head>
+    <title>Anchen - 心情美好，万物晴朗</title>
+    <link rel="icon" href="/./img/logo_1.jpg">
+    <meta charset="utf-8">
+
+    <!-- 引入配置文件 -->
+    
+<link rel="stylesheet" href="/css/main.css">
+
+    
+<link rel="stylesheet" href="/lib/highlight/styles/arduino-light.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <div id="main">
+        <!-- 引入导航 -->
+        <nav>
+            
+<link rel="stylesheet" href="/css/nav.css">
+
+
+<script src="/js/nav.js"></script>
+
+
+<div class="nav-div">
+    <div class="page-title" onmouseover="showTitileImage()" onmouseout="showTitileLink()" onclick="window.location.href='/'">
+        <!-- 左侧页面标题和Home键 -->
+        <a id="PageTitle">Anchen</a>
+        <img class="navsvg" id="PageTitleSvg" src="/img/Home.svg" alt="SVG Image">
+    </div>
+    <div id="mediumText">
+        
+    </div>
+    <div class="menu">
+        <div id="DayToNightDiv" onclick="toggleDayToNight()">
+            <img class="navsvg" id="DayToNightSVG" src="/img/Day.svg" alt="SVG Image">
+        </div>
+    </div>
+</div>
+
+
+        </nav>
+        <div class="main-container">
+            <!-- 引入正文 -->
+            <div id="content">
+                
+<link rel="stylesheet" href="/css/post.css">
+
+<div id="post-top">
+    <span id="post-title" >【QT+SQLite】实现大学生课程学习管理与成绩评价系统（3）——代码编写</span>
+    <div id="post-data">
+        <span id="post-author">作者: Anchenry</span>
+        <br>
+        <span id="post-date">2024-03-14 15:14:24</span>
+    </div>
+</div>
+<div id="article">
+    <h2 id="1-整体设计"><a href="#1-整体设计" class="headerlink" title="1.	整体设计"></a>1.	整体设计</h2><p>可视化界面设计：<br>&emsp;&emsp;本系统的可视化界面主要显示在MainWindow.ui创建的主窗口上，通过stackedWidget实现不同功能显示在不同页面的分页功能，利用tableWidget显示查询得到的数据；利用pushButton创建槽函数实现鼠标点击实现增加数据、删除数据、修改数据的功能；利用lineEdit、comboBox控件获取用户输入的信息实现增加、修改数据。<br>&emsp;&emsp;stackedWidget控件创建的pagetwo_1作为学生基本信息查询界面，pagetwo_2作为学生选课及成绩录入界面，pagetwo_3作为学生学业情况查询界面，pagetwo_4作为教师授课情况查询界面，pagetwo_5作为课程信息查询及录入界面，pagetwo_6作为系、班级信息查询界面，pagetwo_7作为教师基本信息查询界面；pagethree_1作为学生选课的界面。<br>&emsp;&emsp;同时在主窗口之外也新建了page_register.ui界面用于显示登录界面，区分是学生登入还是教师登入，并且学生登入时需要输入学号用于选课；新建了choose_tea.ui界面用于选择功能，学生登入和教师登入时可选择的功能也有不同，这样也可以保证数据库的安全性；dialog_addstu.ui界面和dialog_updatestu.ui界面分别用于增加和修改学生基础信息；map1.ui界面用于显示校园地图和实现最短路径的查询和教学设施的地图查询；map_class.ui界面录入课程信息时通过教学楼交互平面图选择课程教室；map_class2.ui界面用于实现通过在主窗口选定课程，自动显示所在教室位置的功能。<br>头文件与cpp文件：<br>&emsp;&emsp;MainWindow.h、page_register.h、choose_tea.h、dialog_addstu.h、dialog_updatestu.h、map1.h、map_class.h、map_class2.h、stu_code.h及其cpp文件均主要实现对应ui界面中的数据操作功能，在头文件和cpp文件中利用C++语言编写代码实现界面中需要的功能。map_struct.h设计用于编写空间数据的类及无向图的类，system.h及其cpp文件用于连接数据库已经实现对数据库中相应数据的增加、删除、修改以及查询和成绩到绩点的换算的功能。Mainwindow.cpp文件中利用指针实现对system.cpp文件中函数的调用，完成对数据库的维护和查询，并在主窗口中显现查询的数据或者通过pushButton的槽函数维护数据。</p>
+<ol start="2">
+<li>   连接数据库<br>&emsp;&emsp;该文件中编写的代码主要用于实现数据库的连接和实现对数据库中数据的增加、删除、修改和查询。</li>
+</ol>
+<p>&emsp;&emsp;因为本系统需要利用可视化图形界面来实现数据的查询和维护，所以采用QT来进行编写代码，利用QT 5.9.0 MinGW 32bit作为构建套件进行构建和运行，利用Navicat 12 for SQLite创建数据库并连接到QT中。在system.cpp文件中函数void init()用于连接Navicat 12 for SQLite中创建的数据库，通过包含头文件QSqlDatabase库并利用函数来实现连接。<br>&emsp;&emsp;调用addDatabase()函数初始化，利用setDatabaseName()函数告知数据库文件的地址及名字，调用sqllinfo()函数连接数据库，并且执行QString sql &#x3D; “PRAGMA foreign_keys &#x3D; ON;”打开SQLite默认关</p>
+<h2 id="3-登入验证"><a href="#3-登入验证" class="headerlink" title="3.	登入验证"></a>3.	登入验证</h2><p>&emsp;&emsp;在stu_code.h中定义了init()函数连接数据库、QString getstucode(QString stu_num)获取学生密码和QString gettecode(QString te_num）获取教师密码，并在page_register.cpp中利用if函数进行判断，判断输入正确后发送信号跳转页面。</p>
+<h2 id="4-学生基础信息查询和维护："><a href="#4-学生基础信息查询和维护：" class="headerlink" title="4.	学生基础信息查询和维护："></a>4.	学生基础信息查询和维护：</h2><p>&#x3D;&#x3D;查询学生基础信息：&#x3D;&#x3D;<br>&emsp;&emsp;在system.h中定义了struct类stuinfo用于存储和区分从数据库中获取的单条数据的数据项，并定义了   quint32 getstudentnum()函数用于查询数据库存储有的学生基础信息的元组数，定义了QList<stuinfo> getstu()函数用于获取所有学生基础信息的数据。<br>quint32 getstudentnum()函数执行了嵌入式SQL语句sql.exec(“SELECT COUNT(‘student_number’) FROM STUDENT;”)，并把得到的内容转化为整型返回。<br>&emsp;&emsp;QList<stuinfo> getstu()函数定义了stuinfo类型的数组，利用next()和while循环逐条遍历嵌入式SQL语句sql.exec(“SELECT STUDENT.*,CLASS.de_num FROM STUDENT LEFT OUTER JOIN CLASS ON (STUDENT.cl_num&#x3D;CLASS.cl_num) ORDER BY stu_num ASC;”)从数据库中获取的数据存入stuinfo类型的数组中。<br>&emsp;&emsp;在MainWindow.h中总共定义了void showbasedata()函数用于查询学生基础信息和在更新数据后更新显示的数据；在showbasedata()函数中利用了setHorizontalHeaderLabels()函数设置了对应界面中的tableWidget的表头，利用了etSelectionBehavior（）、setEditTriggers(）完成选中一行数据的功能；利用声明的system类的指针ptrsystem调用在system.h中声明的函数getstudentnum()从数据库中获取所有的学生基础信息的数量，设置为tableWidget的行数，以及调用在system.h中声明的函数getstu()从数据库中获取所有的学生基础信息并赋值给stuinfo类型的数组lStudents；再利用for循环把lStudents中的数据遍历输出到对应的tableWidget中。<br>&#x3D;&#x3D;增加学生基础信息：&#x3D;&#x3D;<br>&emsp;&emsp;在system.h中定义了bool addstu(stuinfo info)用于增加学生基础信息，通过MainWindow.cpp传入一条stuinfo类型的数据后，执行嵌入式SQL语句INSERT INTO STUDENT VALUES(‘%1’,’%2’,’%3’,%4,%5,’%6’)，利用,arg()填充内容。再通过判断exec()是否正确执行，进行qDug()错误检验。<br>在MainWindow.h定义了槽函数void on_addstu_button_clicked()用于调用exec()函数转到dialog_addstu.ui创建的数据增加页面，该界面会给用户提供输入学生基础信息的控件。<br>&emsp;&emsp;在dialog_addstu.h中定义了槽函数void on_pushButton_clicked()和void on_pushButton_2_clicked()分别用于保存需要添加的学生基础信息和退出该界面。void on_pushButton_clicked()函数先通过if函数保证了用户在输入信息时没有遗漏学生姓名和班级信息，在保证信息均输入之后从界面中添加的LineEdit、comboBox控件中获取信息赋给stuinfo类型的变量stu,再利用system类的指针调用addstu()函数实现在数据库中增加信息。同时也定义了void addstu_clear()函数，在按下界面中的pushButton控件后能清空lineEdit控件中的数据和使comboBox中的数据回到第一个值。<br>增加完成后调用showbasedata()函数重新查询数据。</stuinfo></stuinfo></p>
+<p>&#x3D;&#x3D;删除学生信息：&#x3D;&#x3D;<br>&emsp;&emsp;在这里设置两种删除方式，删除单条数据和删除全部数据，所以添加了checkBox控件，用户选择就进行删除全部数据。<br>所以在system.h中定义了两个函数bool delstu(QString id)用于删除单条数据和函数void emptystutable(）删除全部学生数据。bool delstu(QString id)函数通过输入的学生学号，执行嵌入式SQL语句DELETE FROM STUDENT WHERE stu_num &#x3D; ‘%1’，并利用.arg()输入学号，同样利用qDug()判断是否成功执行。void emptystutable(）执行了”DELETE FROM STUDENT”SQL语句，执行后同样利用qDug()判断是否成功执行。<br>在MainWindow.h定义的槽函数void on_delstu_button_clicked()中，利用if函数判断checkBox控件是否选中，选中则调用emptystutable(）函数，没有选中则利用currentRow()取出当前行的索引再利用item()函数取出当前行的学生学号，再调用delstu()函数传入学生学号。<br>&emsp;&emsp;删除完成后调用showbasedata()函数重新查询数据。</p>
+<p>&#x3D;&#x3D;修改学生信息：&#x3D;&#x3D;<br>&emsp;&emsp;在实现修改学生信息时代码编写的方式同增加学生信息时相似，通过在主窗口中的pushButton控件触发槽函数void on_updatestu_button_clicked()，显现dialog_updatestu.ui创建的ui界面，通过修改界面的pushButton触发槽函数void on_pushButton_clicked()，调用system.h定义的void updatestuinfo(stuinfo info)函数执行UPDATE STUDENT SET stu_name&#x3D;’%1’,stu_gender&#x3D;’%2’,birth_year&#x3D;%3,birth_month&#x3D;%4,cl_num&#x3D;’%5’ WHERE stu_num&#x3D;’%6’，利用.arg()填入要修改的内容，利用主键学生学号作为条件。通过返回的pushButton触发槽函数void on_pushButton_2_clicked()，调用hide()函数关闭修改界面。每次按下保存和返回pushButton时，都会调用void updatestu_clear()函数清空用户输入或选择的内容。<br>&emsp;&emsp;修改完成后调用showbasedata()函数重新查询数据。</p>
+<p>&#x3D;&#x3D;搜索学生信息：&#x3D;&#x3D;<br>&emsp;&emsp;学生信息按班级或系代号搜索主要通过对获取的所有学生信息进行遍历对比再重新输出到对应的界面中的tableWidget中。槽函数void on_searchButton_clicked()触发后，在判断搜索条件非空的情况下，重新利用setHorizontalHeaderLabels()等函数设置tableWidget的格式和选中整行，再调用getstu()函数获取所有数据，利用for循环把满足contains()函数的数据及一条数据中班级项中包含搜索条件或是系代号项包含搜索条件的数据输出到tablWidget中。</p>
+<p>&emsp;&emsp;下图是学生基础信息查询和维护界面的功能实现的主要函数调用示意图：</p>
+<h2 id="5-学生选课信息查询和维护："><a href="#5-学生选课信息查询和维护：" class="headerlink" title="5.	学生选课信息查询和维护："></a>5.	学生选课信息查询和维护：</h2><p>&emsp;&emsp;在system.h中定义了struct courseinfo类用于存储本功能需要的数据库中的数据，在类中定义了QString course_stunumber用于存储学生学号，QString course_stuname用于存储学生姓名，QString course_lename用于存储课程名称，QString course_lenumber用于存储课程号，quint16 course_course用于存储课程成绩，qreal course_grpoint用于存储课程绩点，QString make_up作为重修标记。</p>
+<p>&#x3D;&#x3D;查询学生选课和成绩信息：&#x3D;&#x3D;<br>&emsp;&emsp;该功能的实现与学生基础信息查询的实现类似，在MainWindow.h中定义void showcoursedata()用于显现学生选课情况，先设置表的标头以及选中行，再调用system类的指针调用quint32 getcoursenum()用于指定行数，再调用system类的指针调用QList<courseinfo> getcourse()，返回在system.h中定义的courseinfo类的数组，通过for循环把获取的courseinfo类的数组中的数据输出到本界面对应的tablewidget中。<br>&emsp;&emsp;同时定义了showcoursedata_else()函数来往界面中的comboBox控件中添加数据库中提取的相应的内容，先调用getstu()函数获取所有的学生数据再遍历把所有的学生姓名加入控件中，在是否重修的comboBox控件中利用addItem(）分别添加字符串“是”和“否”，调用getlesson_number()获取数据，把课程号加入控件中。</courseinfo></p>
+<p>&#x3D;&#x3D;增加学生选课和成绩信息：&#x3D;&#x3D;<br>&emsp;&emsp;该功能同样与学生基础信息增加的实现类似，在MainWindow.h中通过槽函数void on_addcourse_button_clicked()利用system类指针调用system.h中定义的bool coursestu(courseinfo info)，传入从界面上获取的数据，执行嵌入式SQL语句INSERT INTO StuL VALUES(‘%1’,’%2’,%3,’%4’)增加学生选课信息。最后调用choose_clear()清空所有用户输入或者选择的内容。最后再调用showcoursedata()和showcoursedata_else()显示界面中的数据和其他内容。</p>
+<p>&#x3D;&#x3D;删除学生选课和成绩信息：&#x3D;&#x3D;<br>&emsp;&emsp;该功能同样与学生基础信息删除的实现类似，在MainWindow.h中通过槽函数void on_delcourse_button_clicked()先利用currentRow()获取当前行索引，再item(i,0)和item(i,2)分别获取学生学号和课程号，再调用delcourse（），传入学号和课程号，执行嵌入式SQL语句DELETE FROM StuL WHERE stu_num &#x3D; ‘%1’ AND le_num&#x3D;’%2’，利用.arg()填入学号和课程号，最后调用showcoursedata()重新查询并显现数据。<br>修改学生选课和成绩信息：<br>&emsp;&emsp;该功能同样与学生基础信息修改的实现类似，在MainWindow.h中通过槽函数void on_updatecourse_button_clicked()，利用courseinfo类变量记录从界面中获取的修稿修改的数据，再调用void updatecourseinfo(courseinfo info)函数，传入courseinfo类变量，执行UPDATE StuL SET course&#x3D;’%1’,make_up&#x3D;’%2’ WHERE stu_num&#x3D;’%3’ AND le_num &#x3D;’%4’<br>，填入courseinfo类变量中的数据，调用完成后再调用course_clear()函数清空用户输入或者选择的内容。最后调用showcoursedata()和showcoursedata_else()显示界面中的数据和其他内容。</p>
+<p>&emsp;&emsp;下图是学生选课信息查询和维护界面的功能实现的主要函数调用示意图：</p>
+<h2 id="6-学生学业信息查询："><a href="#6-学生学业信息查询：" class="headerlink" title="6.	学生学业信息查询："></a>6.	学生学业信息查询：</h2><p>&emsp;&emsp;在system.h中定义了struct stucoinfo类用于存储在实现本功能时需要的数据库中的数据，在类中定义了QString course_stunumber用于存储学生学号，QString course_stuname用于存储学生姓名，qreal meancourse用于存储学生平均学分绩点，QString course_class用于存储班级均分，quint16 course用于存储学生成绩，QString le_type用于存储课程类型，QString make_up是重修的标记，qreal credit为课程学分，QString StuL_stunumber是StuL模式中存储的学生数量。<br>该功能的实现需要借助于预先创建好的数据库meancourse用于存储计算和分组排序后得到的学生学业信息的汇总情况。<br>在system.h中定义了QList<stucoinfo> getstuco()用于获取学业信息并按班级分组，该函数<br>&emsp;&emsp;先利用QList<stucoinfo> stuco_l变量通过循环遍历存储SELECT stu_num,stu_name,cl_num FROM STUDENT嵌入式SQL语句执行得到的学生数据，再利用QList<stucoinfo> stuco_co变量也通过循环遍历存储SELECT stu_num,course,make_up,le_type,le_credit FROM StuL,LESSON WHERE StuL.le_num&#x3D;LESSON.le_num AND course!&#x3D;’null’嵌入式SQL语句得到的学号、成绩、重修标记、课程性质、学分数据。<br>&emsp;&emsp;再通过循环遍历，每次用stuco_l的一条数据遍历寻找学生学号相同的stuco_co变量中的数据，找到相同的学生学号数据则对定义的用于记录学分的整型变量credit加上对应的学分，同时也对定义的用于记录课程学分<em>课程学分绩点的整型变量credit_min加上经过换算的数值，换算规则为课程性质为基础必修：课程权重系数1.2</em>绩点<em>课程学分，专业必修程权重系数1.1</em>绩点<em>课程学分，选修程权重系数1</em>绩点*课程学分，每次遍历把得到的数据存储到定义的QList<stucoinfo> scourse_stu数组中，并且通过执行INSERT INTO Meancourse VALUES(‘%1’,’%2’,’%3’,%4)语句把数据存储进meancourse数据库中。<br>&emsp;&emsp;定义的 QList<stucoinfo> getstucodata()用于从meancourse数据库中获取计算后的学分信息并排序，执行的SQL语句为SELECT * from Meancourse ORDER BY cl_num ASC,meancourse DESC。<br>当打开本界面查询学生学业成绩时，connect()函数会调用void showstucodata()函数来显示数据，定义的showstucodata()函数调用了getstucodata()获取分区排序好的数据数组，利用for循环遍历输出至本界面的tableWidget中。<br>&emsp;&emsp;而定义的on_pushButton_6_clicked()槽函数，则会调用system.h中定义的void addcourse()函数把排序好的数据再次输出进数据库的meancourse中。addcourse()先调用emptycourse()函数执行DELETE FROM Meancourse语句清空数据库，清空结束后利用for循环多次执行INSERT INTO Meancourse VALUES(‘%1’,’%2’,’%3’,%4)语句，从定义的QList<stucoinfo> scourse_stu数组中获取调用getstucodata()函数获得的数据，按行增加进入数据库。</stucoinfo></stucoinfo></stucoinfo></stucoinfo></stucoinfo></stucoinfo></p>
+<p>&emsp;&emsp;下图是学生学业情况查询界面的功能实现的主要函数调用示意图：</p>
+<h2 id="7-系、班级信息的维护和查询"><a href="#7-系、班级信息的维护和查询" class="headerlink" title="7. 系、班级信息的维护和查询"></a>7. 系、班级信息的维护和查询</h2><p>&emsp;&emsp;在system.h中定义了struct department类，在该类中定义了5个字符串型变量department_number、department_name、department_tel、department_class、department_number_cl分别用于存储系代号、系名、系办公室电话、班级、班级个数。<br>查询系、班级的信息：<br>&emsp;&emsp;在system.h中定义int getdenum()函数用于系数量的查询和QList<department> getde()函数用于获取所有数据。getdenum()函数执行了嵌入式SQL语句SELECT COUNT(‘cl_num’) FROM DEPARTMENT,CLASS WHERE DEPARTMENT.de_num&#x3D;CLASS.de_num返回了把“系”关系模式和“班级”关系模式进行等值连接后的“班级”属性分量个数。getde()函数则返回了把“系”关系模式和“班级”关系模式进行等值连接后的所有数据，利用定义的QList<department>类型数组进行存储。<br>在MainWindow.h中定义了void showdedata()函数用于在本界面的tableWidget中显示数据,<br>&emsp;&emsp;利用setColumnCount()、setHorizontalHeaderLabels()函数设置表头，setRowCount()设置getdenum()函数的返回值为行数，再利用for循环遍历每行输出至tableWidget中。</department></department></p>
+<p>&#x3D;&#x3D;增加系、班级的信息：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在MainWindow.h中创建的槽函数void on_pushButton_add26_clicked()在用户输入的系代号不为空的情况下，利用system.h中定义的指针调用 void addde(department info)函数，利用department info传入用户输入的信息。当增加的信息中的系不存在时执行SQL语句INSERT INTO DEPARTMENT VALUES(‘%1’,’%2’,’%3’)和INSERT INTO CLASS VALUES(‘%1’,’%2’)分别在系模式和班级模式中增加数据，当系存在时执行INSERT INTO CLASS VALUES(‘%1’,’%2’)语句只在班级模式中增加数据，最后调用showdedata()函数重新输出数据。<br>删除系、班级的信息：<br>&emsp;&emsp;本功能利用在MainWindow.h中创建的槽函数void on_pushButton_del26_clicked()，在利用currentRow()和item(）函数取出系代号和班级后调用bool delde(QString id,QString de_cl)函数，执行DELETE FROM CLASS WHERE de_num &#x3D; ‘%1’AND cl_num &#x3D; ‘%2’，之后利用getdecl()获取班级模式中的系代号数据遍历判断该系代号在班级表中是否存在，不存在时执行DELETE FROM DEPARTMENT WHERE de_num &#x3D; ‘%1’删除没有班级信息的系，最后调用showdedata()函数重新输出数据。<br>修改系、班级的信息：<br>&emsp;&emsp;本功能利用在MainWindow.h中创建的槽函数void on_pushButton_up26_clicked()调用void updatedeinfo(department info)函数传入用户输入的信息后执行UPDATE DEPARTMENT SET DE_NAME&#x3D;’%1’,DE_TEL&#x3D;’%2’ WHERE de_num&#x3D;’%3’修改信息，最后调用showdedata()函数重新输出数据。</p>
+<h2 id="8-教师基本信息查询和维护："><a href="#8-教师基本信息查询和维护：" class="headerlink" title="8. 教师基本信息查询和维护："></a>8. 教师基本信息查询和维护：</h2><p>&emsp;&emsp;在system.h中定义了struct teacher类，该类定义了5个变量QString teacher_number用于存储教师工作证号，QString teacher_name用于存储教师姓名，QString teacher_title用于存储教师职称，QString teacher_tel用于存储教师电话，QString teacher_denum用于存储系代号。<br>查询教师基本信息：<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void showteacherdata()进行信息的查询和显示。showteacherdata()函数利用setColumnCount()、setHorizontalHeaderLabels()函数设置表头，setRowCount()设置quint32 getteachernum()函数的返回值为行数，再利用QList<teacher> getteanum()函数执行SELECT * FROM TEACHER ORDER BY te_num ASC返回的所有数据利用for循环输出到本界面中的tableWidget中。<br>增加教师基本信息：<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void on_pushButton_clicked()槽函数调用bool addteacher(teacher info)函数执行INSERT INTO TEACHER VALUES(‘%1’,’%2’,’%3’,’%4’,’%5’)语句增加教师基本信息。执行结束后调用void teacher_clear()清空输入内容和showteacherdata()函数重新查询并显示数据到本界面的tableWidget中。</teacher></p>
+<p>&#x3D;&#x3D;删除教师基本信息：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void on_pushButton_del_clicked()槽函数，在利用currentRow()和item(）函数取出教室号后调用 bool deltecher(QString id)执行DELETE FROM TEACHER WHERE te_num &#x3D; ‘%1’语句，最后调用showteacherdata()函数重新查询并显示数据到本界面的tableWidget中。</p>
+<p>&#x3D;&#x3D;修改教师基本信息：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void on_pushButton_up_clicked()槽函数，调用updateteacherinfo()函数执行UPDATE TEACHER SET te_name&#x3D;’%1’,te_title&#x3D;’%2’,te_tel&#x3D;’%3’,de_num&#x3D;’%4’ WHERE te_num&#x3D;’%5’<br>&emsp;&emsp;更新数据。执行结束后调用void teacher_clear()清空输入内容和showteacherdata()函数重新查询并显示数据到本界面的tableWidget中。</p>
+<h2 id="9-课程信息查询和维护："><a href="#9-课程信息查询和维护：" class="headerlink" title="9. 课程信息查询和维护："></a>9. 课程信息查询和维护：</h2><p>&emsp;&emsp;在system.h中定义了struct lesson类用于存储课程模式中的数据，定义的QString lesson_number用于存储课程号、QString lesson_name用于村春课程名，QString lesson_type用于存储课程性质，qreal lesson_credit用于存储课程学分，QString lesson_time用于存储上课时间，quint16 lesson_people用于存储课程名额，QString lesson_cr用于存储教室号。<br>查询课程信息：<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void showlessondata()函数，先利用setColumnCount()、setHorizontalHeaderLabels()函数设置表头，setRowCount()设置quint32 getlenum()函数的返回值为行数，再调用QList<lesson> getlesson()函数执行SELECT * FROM LESSON ORDER BY le_num ASC获取所有课程信息，再利用for循环从QList<lesson>数组中逐行输出数据至tableWidget中。<br>同时定义了void showelsedata()函数用于显示界面中tableWidget外的内容。调用了getlesson_number()函数，执行SELECT DISTINCT le_num FROM LESSON ORDER BY le_num ASC语句获取课程号输出到comboBox中。</lesson></lesson></p>
+<p>&#x3D;&#x3D;增加课程信息：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的on_pushButton_3_clicked()槽函数，在判断用户输入的课程号、课程名不为空的情况下调用 void addlesson(lesson info)函数，传入用户输入数据，执行SELECT cr_commit FROM CLASSROOM WHERE cr_num&#x3D;’%1’语句增加课程信息。执行结束后调用void lesson_clear()清空输入内容和showlessondata()函数重新查询并显示数据到本界面的tableWidget中。</p>
+<p>&#x3D;&#x3D;删除课程信息：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void on_pushButton_2_clicked()槽函数，利用currentRow()和item(）函数取出课程号后调用bool dellesson(QString id)执行DELETE FROM LESSON WHERE le_num &#x3D; ‘%1’语句删除指定元组，最后调用showlessondata()函数重新查询并显示数据到本界面的tableWidget中。</p>
+<p>&#x3D;&#x3D;修改课程信息：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在MainWindow,h中定义的void on_pushButton_4_clicked()槽函数，在用户输入课程名和学分的情况下调用 void updateleinfo(lesson info)函数执行SELECT cr_commit FROM CLASSROOM WHERE cr_num&#x3D;’%1’更新数据。执行结束后调用void lesson_clear()清空输入内容和void showlessondata()函数重新查询并显示数据到本界面的tableWidget中。</p>
+<p>&#x3D;&#x3D;交互式选择教室：&#x3D;&#x3D;<br>&emsp;&emsp;此功能利用了MainWindow.h函数定义的void on_pushButton_10_clicked()槽函数，调用show()函数跳转到map_class.ui的界面。<br>&emsp;&emsp;在map_class.h中定义了void paintEvent(QPaintEvent *event)在界面中打印教学楼的平面图，target()函数设置了打印的位置和大小，QPixmap umap()函数记录了图片路径和名称，drawPixmap()函数实现了打印。定义的void mousePressEvent(QMouseEvent *event)鼠标左击事件，利用if函数判断鼠标在界面中点击的x坐标和y坐标，利用变量class_number记录教室号，利用变量class_num把教室号返回至主窗口中用于增加或修改信息时填入教室号。<br>&emsp;&emsp;定义的void on_pushButton_clicked()槽函数，调用了close()函数用于关闭界面。</p>
+<p>&#x3D;&#x3D;显示教室位置：&#x3D;&#x3D;<br>&emsp;&emsp;此功能利用了MainWindow.h函数定义的void on_pushButton_9_clicked()槽函数，调用show()函数跳转到map_class2.ui的界面。同时利用了信号和槽传递了教室信息，在MainWindow.h中定义了void sendchoose_map_class(QString,QString)发送信号的同时传递楼层数和教室号，在map_class2.h中定义了getData(QString,QString)接收传递的数据，connect(this,SIGNAL(sendchoose_map_class(QString,<br>QString)),map_class2,SLOT(getData(QString,QString)))用于连接。<br>&emsp;&emsp;在map_class2.h中定义了void paintEvent(QPaintEvent *event)绘制事件，利用target()函数设置了打印的位置和大小，QPixmap umap()函数记录了图片路径和名称，drawPixmap()函数实现了显示公教一平面图和教室。同时定义了QPen pen和QBrush brush，调用if函数对传入的教室号进行判断，在不同的位置利用drawRect()绘制矩形。<br>&emsp;&emsp;定义的void closeEvent(QCloseEvent *event)函数为主窗口退出事件，利用QMessageBox，提示用户是否确定退出界面。</p>
+<h2 id="10-教师授课信息查询："><a href="#10-教师授课信息查询：" class="headerlink" title="10. 教师授课信息查询："></a>10. 教师授课信息查询：</h2><p>&emsp;&emsp;在system.h中定义了struct teachinfo类用于存储教室-课程模式中和其他的数据， QString teacher_number时教师工作证号，QString teacher_name存储了教师姓名，QString teacher_tel存储了教师电话，String class_name存储了课程名，QString class_number存储了课程号，qreal lesson_credit存储了学分。<br>本功能利用在MainWindow,h中定义的void showteachdata()函数，先利用setColumnCount()、setHorizontalHeaderLabels()函数设置表头，setRowCount()设置quint32 getteale_num()函数的返回值为行数，再调用QList<teachinfo> getteale()函数执行SELECT * FROM TEACHER,TC,LESSON WHERE TEACHER.te_num&#x3D;TC.te_num AND TC.le_num&#x3D;LESSON.le_num AND TEACHER.te_num!&#x3D;’null’ ORDER BY TEACHER.te_num ASC存储数据至QList<teachinfo>数组中，再利用for循环逐行输出数据至本界面中的tableWidget中。<br>&emsp;&emsp;增加课程信息和删除课程信息代码同课程信息查询和维护相似。</teachinfo></teachinfo></p>
+<h2 id="11-学生选课功能："><a href="#11-学生选课功能：" class="headerlink" title="11. 学生选课功能："></a>11. 学生选课功能：</h2><p>&emsp;&emsp;在本界界面中利用学生用户在登入界面输入的学号进行检索查询学生未选择的课程和已选择的课程，在MainWindow.h中定义了void showchoosedata()查询未被选择的课程和void showchoosendata()用于查询已经被选择的课。两函数均先利用setColumnCount()、setHorizontalHeaderLabels()函数设置表头。showchoosedata()函数再调用getunchooselesson()函数执行SELECT * FROM LESSON WHERE le_num NOT IN (SELECT le_num FROM StuL WHERE stu_num &#x3D; ‘%1’把获得的数据存储到QList<lesson>类型数组中，setRowCount()设置QList<lesson>类型数组的size()函数的返回值为行数，再通过for循环逐行输出至界面中对应的tableWidget。showchoosendata()函数再调用getchooselesson()函数执行SELECT * FROM LESSON WHERE le_num IN (SELECT le_num FROM StuL WHERE stu_num&#x3D;’%1’语句把获取的数据存储到QList<lesson>类型的数组中，setRowCount()设置QList<lesson>类型数组的size()函数的返回值为行数，最后也通过for循环逐行输出至界面中对应的tableWidget中。<br>&emsp;&emsp;void on_pushButton_5_clicked()用于用户点击删除已选择课程，利用currentRow()和item(）函数取出课程号，在保证用户选中对应tableWidget中的一行数据后调用bool delchoosele(QString id,QString number)函数传入学生学号和课程号执行DELETE FROM StuL WHERE stu_num&#x3D;’%1’ AND le_num &#x3D; ‘%2’语句删除数据。最后调用showchoosendata()和showchoosedata()重新查询和显示数据。<br>&emsp;&emsp;void on_pushButton_7_clicked()用于用户选择课程，利用currentRow()和item(）函数取出课程号，在保证用户选中对应tableWidget中的一行数据后调用bool addchoosele(QString id,QString number)函数传入学生学号和课程号执行INSERT INTO StuL(stu_num,le_num) VALUES (‘%1’,’%2’)增加数据。最后调用showchoosendata()和showchoosedata()重新查询和显示数据。<br>&emsp;&emsp;同时利用 QList<stuinfo> getstuname(QString stu_number)获取该学生基础信息后，利用void showstudata()显示在下方的文字区域。<br>定义的bool check(QString id)函数用于检查选课时没有超过名额，执行了SELECT COUNT(‘stu_num’) FROM StuL WHERE le_num&#x3D;’%1’和SELECT le_people FROM LESSON WHERE le_num&#x3D;’%1’语句，对比得到的数值，已选择课程人数小于名额时可以选课，在执行槽函数void on_pushButton_7_clicked()利用if函数进行保证。</stuinfo></lesson></lesson></lesson></lesson></p>
+<h2 id="12-校园导航："><a href="#12-校园导航：" class="headerlink" title="12. 校园导航："></a>12. 校园导航：</h2><p>&emsp;&emsp;本功能利用map_struct.h中定义的struct arcell、struct vexsinfo、struct mgraph三个类，分别用于存储边、点、和无向图，在mgraph类中定义了adjmatrix arcs为表示邻接矩阵的数组，vexsinfo vexs[MaxVertexNum]为存储顶点的数组。本功能将把校园地图中的空间数据存储在这些类中利用佛洛依德算法计算最短路径。</p>
+<p>&#x3D;&#x3D;最短路径查询：&#x3D;&#x3D;<br>&emsp;&emsp;本功能利用在Map1.h中定义的mgraph initgraph()函数录入校园中的所有点空间信息及x坐标和y坐标和名称，并构建边和无向图。在initgraph()函数先在vexsinfo vexs数组中添加顶点信息，先利用for循环创建所有点给与编号，再利用strcpy(）添加点的名称，PX为该点在界面中的x坐标，PY为该店在界面中的y坐标；并在adjmatrix arcs二维数组中存储各边的权值，没有连接的两点之间的边权值赋值为20000，并利用for循环进行对称赋值。<br>Map1.h中定义的void mousePressEvent(QMouseEvent *event)用于用户从地图中选择起点和终点，通过mapFromGlobal(QCursor().pos()).x()获取鼠标点击位置的x值，mapFromGlobal(QCursor().pos()).y()获取鼠标点击位置的y值,再通过if函数进行判断点击位置的点的编号，当界面中comboBox选择为起点时该店编号输出为起点编号，选择为终点时输出为终点编号。<br>&emsp;&emsp;void on_pushButton_clicked()槽函数用于获取起点和终点的编号，再调用shortdistance(campus, start, end)寻找最短路径。<br>void floyd(mgraph c)函数中利用了两个二维数组shortest[i][j]和pathh[i][j]。shortest[i][j]用于存储initgraph()函数中创建的无向图数组，pathh[i][j]用于记录i点和j点最短路径上的第二个点。本函数先利用for循环给hortest[i][j]赋值，再利用for循环进行最短路径计算，计算后shortest[i][j]记录为i和j点之间对端路径的长度，pathh[i][j]可以记录最短路径的经过点。<br>&emsp;&emsp;Shortdistance()函数先调用了void floyd(mgraph c)函数计算获得最短路径，再利用QT绘图的双缓冲机制，定义了QPixmap pix对象，再利用target()函数设置了打印的位置和大小，QPixmap umap()函数记录了图片路径和名称，drawPixmap()函数实现了显示校园地图，再定义 QPen pen画笔，通过while循环不断判断pathh[i][j]是否为终点的编号逐线段输出最短路径在pix上，最后利用update()触发void paintEvent(QPaintEvent *event)绘制事件重新绘制。</p>
+<p>&#x3D;&#x3D;教学设施查询：&#x3D;&#x3D;<br>&emsp;&emsp;定义了void showlocation()用于教学设施的查询，同样通过双缓冲机制，先绘制在pix上最后用update()函数触发void paintEvent(QPaintEvent *event)绘制事件重新绘制。函数中通过对comboBox_2中用户选择内容的判断在不同位置绘制不同的图形，主要利用了drawRect（）绘制矩形、drawText（）绘制字和drawEllipse()绘制圆。</p>
+<h2 id="13-界面跳转"><a href="#13-界面跳转" class="headerlink" title="13. 界面跳转"></a>13. 界面跳转</h2><p>&emsp;&emsp;编写代码时主要利用了两种方式来显示界面。第一种利用了信号和槽原理，通过emit发送定义的信号，并利用connect()接收，同时定义了auto类型指针实现规定跳转的界面和需要调用的函数。第二种通过包含对应ui界面的头文件创建对象直接调用show()或exec()函数实现画面跳转。<br>&emsp;&emsp;关闭界面时也定义了一些pushButton控件触发槽函数，进一步调用close()函数关闭界面。</p>
+
+</div>
+
+
+            </div>
+
+            <!-- 引入侧边栏 -->
+            <aside id="#aside">
+                
+<link rel="stylesheet" href="/css/aside.css">
+
+
+<link rel="stylesheet" href="/lib/leaflet/leaflet.css">
+
+<div class="selfdiv">
+    <div class="csseffect">
+        <div id="pageicon">
+            <img src="/./img/logo_1.jpg" alt="img">
+        </div>
+        <div id="moon"></div>
+    </div>
+</div>
+<div id="locationMap"></div>
+
+
+<script src="/lib/leaflet/leaflet.js"></script>
+
+
+<script src="/js/aside.js"></script>
+
+            </aside>
+        </div>   
+        <div class="bottom">
+            
+<link rel="stylesheet" href="/css/bottom.css">
+
+<hr class="hr-twill">
+<div class="foot">
+    <div class="since">
+        <p class="sinceyear">©  2023-2024</p>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <!-- 引入 js 文件 -->
+    
+<script src="/js/main.js"></script>
+
+    
+<script src="/lib/highlight/highlight.min.js"></script>
+
+    
+<script src="/lib/jquery-3.7.1.min.js"></script>
+
+    <script>
+        hljs.initHighlightingOnLoad();
+    </script>
+</body>
+</html>

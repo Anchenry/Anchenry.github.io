@@ -15,6 +15,18 @@ function showTitileLink() {
     document.getElementById('PageTitleSvg').style.display = 'none';
 }
 
+function loadLocationMap(lon,lat) {
+    var map = L.map('locationMap', {
+        attributionControl: false,
+        zoomControl: false // 隐藏 Zoom 控件
+    }).setView([lat, lon], 8);
+
+    // OSM加载
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+}
+
 let isDay = true;
 function initialize() {
     const body = document.querySelector('body');
@@ -38,6 +50,57 @@ function initialize() {
         title = titleElement.textContent;
     }
     NavtITLE.innerText = title;
+
+    // 请求用户地理位置信息
+    navigator.geolocation.getCurrentPosition(function(position) {
+        var lon = position.coords.longitude;
+        var lat = position.coords.latitude;
+        loadLocationMap(lon, lat);
+    });
+
+    // 社交图标样式
+    const socialImgs = document.getElementsByClassName('social-img');
+    const socialImgsArray = Array.from(socialImgs);
+    socialImgsArray.forEach(socialImg => {
+        socialImg.addEventListener('mouseover', function() {
+            if (isDay) {
+                socialImg.style.backgroundColor = MainColor.DayMainColor;
+            } else {
+                socialImg.style.backgroundColor = MainColor.NightMainColor;
+            }
+        });
+
+        socialImg.addEventListener('mouseout', function() {
+            if (isDay) {
+                socialImg.style.backgroundColor = MainColor.DayBgColor;
+            } else {
+                socialImg.style.backgroundColor = MainColor.DayBgColor;
+            }
+        });
+    });
+
+    // 主页文章样式
+    const articlesDiv = document.getElementsByClassName('article-div');
+    const articleDivArray = Array.from(articlesDiv);
+    articleDivArray.forEach(articleDiv => {
+        const articleTitle = articleDiv.querySelector('.article-title');
+
+        articleDiv.addEventListener('mouseover', function() {
+            if (isDay) {
+                articleDiv.style.borderColor = MainColor.DayMainColor;
+                articleDiv.style.color = MainColor.DayMainColor;
+                articleTitle.style.color = MainColor.DayMainColor;
+            } 
+        });
+
+        articleDiv.addEventListener('mouseout', function() {
+            if (isDay) {
+                articleDiv.style.borderColor = MainColor.DayBgColor;
+                articleDiv.style.color = MainColor.NightBgColor;
+                articleTitle.style.color = MainColor.NightBgColor;
+            } 
+        });
+    });
 }
 
 window.onload = initialize;
@@ -48,8 +111,60 @@ function toggleDayToNight() {
     const svgImage = document.getElementById('DayToNightSVG');
     const svgImages = document.getElementsByClassName('navsvg'); 
     const links = document.getElementsByTagName('a');
-    const moon = document.getElementById('moon');
-    let moonBeforeColor = getComputedStyle(document.querySelector('#moon'), ':before').getPropertyValue('background-color');
+
+    // 社交图标样式
+    const socialImgs = document.getElementsByClassName('social-img');
+    const socialImgsArray = Array.from(socialImgs);
+    socialImgsArray.forEach(socialImg => {
+        socialImg.addEventListener('mouseover', function() {
+            if (isDay) {
+                socialImg.style.backgroundColor = MainColor.DayMainColor;
+            } else {
+                socialImg.style.backgroundColor = MainColor.NightMainColor;
+            }
+        });
+
+        socialImg.addEventListener('mouseout', function() {
+            if (isDay) {
+                socialImg.style.backgroundColor = MainColor.DayBgColor;
+            } else {
+                socialImg.style.backgroundColor = MainColor.DayBgColor;
+            }
+        });
+    });
+
+        // 主页文章样式
+        const articlesDiv = document.getElementsByClassName('article-div');
+        const articleDivArray = Array.from(articlesDiv);
+        articleDivArray.forEach(articleDiv => {
+            const articleTitle = articleDiv.querySelector('.article-title');
+    
+            articleDiv.addEventListener('mouseover', function() {
+                if (isDay) {
+                    articleDiv.style.borderColor = MainColor.DayMainColor;
+                    articleDiv.style.color = MainColor.DayMainColor;
+                    articleTitle.style.color = MainColor.DayMainColor;
+                } 
+                else {
+                    articleDiv.style.borderColor = MainColor.NightMainColor;
+                    articleDiv.style.color = MainColor.DayMainColor;
+                    articleTitle.style.color = MainColor.DayMainColor;
+                }
+            });
+    
+            articleDiv.addEventListener('mouseout', function() {
+                if (isDay) {
+                    articleDiv.style.borderColor = MainColor.DayBgColor;
+                    articleDiv.style.color = MainColor.NightBgColor;
+                    articleTitle.style.color = MainColor.NightBgColor;
+                } 
+                else {
+                    articleDiv.style.borderColor = MainColor.NightBgColor;
+                    articleDiv.style.color = MainColor.DayBgColor;
+                    articleTitle.style.color = MainColor.DayBgColor;
+                }
+            });
+        });
 
     if (isDay) {
         // 切换为夜间主题
@@ -65,15 +180,6 @@ function toggleDayToNight() {
         for (let i = 0; i < links.length; i++) {
             links[i].style.color = MainColor.DayBgColor;
         }
-        // 介绍卡样式替换
-        // moonBeforeColor = '#fcc515';
-        // document.styleSheets[0].insertRule(
-        //     `@keyframes cresent {
-        //         0% { transform: translate(-30px, 30px), scale(0.9);box-shadow: none;}
-        //         50% { transform: translate(0px, 0px), scale(1.02);box-shadow: 0 0 10px #fcc515, 0 0 80px 8px #fcc515, background-color: #e9d186;}
-        //         100% {transform: translate(30px, -30px), scale(0.9);box-shadow: none;}}`,
-        // );
-        // document.getElementById("moon").style.animation = "3.2s cresent linear" 
     } else {
         // 切换为日间主题
         body.style.backgroundColor = MainColor.DayBgColor;
@@ -86,15 +192,5 @@ function toggleDayToNight() {
         for (let i = 0; i < links.length; i++) {
             links[i].style.color = MainColor.NightBgColor;
         }
-
-        // 介绍卡样式替换
-        // moonBeforeColor = '#C7938B'
-        // document.styleSheets[0].insertRule(
-        //     `@keyframes cresent {
-        //         0% { transform: translate(-30px, 30px), scale(0.9);box-shadow: none;}
-        //         50% { transform: translate(0px, 0px), scale(1.02);box-shadow: 0 0 10px #C7938B, 0 0 80px 8px #C7938B, background-color: #efdbd8;}
-        //         100% {transform: translate(30px, -30px), scale(0.9);box-shadow: none;}}`,
-        // );
-        // document.getElementById("moon").style.animation = "3.2s cresent linear" 
     }
 }

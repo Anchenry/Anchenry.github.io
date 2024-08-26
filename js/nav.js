@@ -147,8 +147,8 @@ function toggleDayToNight() {
                 } 
                 else {
                     articleDiv.style.borderColor = MainColor.NightMainColor;
-                    articleDiv.style.color = MainColor.DayMainColor;
-                    articleTitle.style.color = MainColor.DayMainColor;
+                    articleDiv.style.color = MainColor.NightMainColor;
+                    articleTitle.style.color = MainColor.NightMainColor;
                 }
             });
     
